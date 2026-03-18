@@ -29,7 +29,7 @@
     <style>
         body { font-family: 'Cairo', sans-serif; background-color: #F4E7C3; min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; }
         .glass-panel { background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(10px); border-radius: 2rem; width: 95%; max-width: 400px; padding: 2rem; box-shadow: 0 15px 35px rgba(0,0,0,0.1); border: 1px solid rgba(255,255,255,0.5); }
-        .btn-3d { position: relative; transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); border-radius: 1rem; font-weight: 700; box-shadow: 0 6px 0 rgba(0,0,0,0.1); }
+        .btn-3d { position: relative; transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); border-radius: 1rem; font-weight: 700; box-shadow: 0 6px 0 rgba(0,0,0,0.1); text-align: center; cursor: pointer; }
         .btn-3d:active { transform: translateY(4px); box-shadow: 0 2px 0 rgba(0,0,0,0.1); }
         .btn-3d-green { background: linear-gradient(180deg, #006400, #004d00); color: white; border-bottom: 5px solid #002e00; }
         .btn-3d-red { background: linear-gradient(180deg, #D32F2F, #B71C1C); color: white; border-bottom: 5px solid #8B0000; }
@@ -38,11 +38,19 @@
         .btn-3d-gray { background: #f3f4f6; color: #4b5563; border-bottom: 5px solid #d1d5db; }
         .camera-overlay { position: fixed; inset: 0; background: #000; z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; }
         .camera-box { width: 85%; max-width: 350px; aspect-ratio: 1/1; overflow: hidden; border-radius: 2rem; border: 6px solid #00BCD4; transform: scaleX(-1); }
-        .eid-card-final { background: white; border: 10px double #D4AF37; border-radius: 2.5rem; overflow: hidden; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-        .animate-up { animation: fadeIn 0.5s ease-out forwards; }
+        
+        .eid-card-final { 
+            background: #fff; 
+            border: 12px double #D4AF37; 
+            border-radius: 2.5rem; 
+            overflow: hidden; 
+            position: relative;
+            background-image: url('https://www.transparenttextures.com/patterns/paper-fibers.png');
+        }
         .timer-circle { width: 100px; height: 100px; border: 6px solid #f3f3f3; border-top: 6px solid #006400; border-radius: 50%; animation: spin 2s linear infinite; display: flex; align-items: center; justify-content: center; margin: 0 auto; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .animate-up { animation: fadeIn 0.5s ease-out forwards; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body>
@@ -52,12 +60,10 @@
 const { useState, useRef, useEffect } = React;
 
 const FIXED_LOGO_URL = "logo.png"; 
-// الرقم بالصيغة الدولية الصحيحة بدون أصفار في البداية
 const WHATSAPP_NUMBER = "249912108101"; 
 
 function SudanEidApp() {
     const [step, setStep] = useState('splash');
-    const [path, setPath] = useState(null);
     const [credits, setCredits] = useState(2);
     const [formData, setFormData] = useState({ name: '', relation: '', userImg: null, receiptImg: null });
     const [showCamera, setShowCamera] = useState(false);
@@ -69,9 +75,6 @@ function SudanEidApp() {
     const streamRef = useRef(null);
     const cardRef = useRef();
 
-    const APP_BANK_ACCOUNT = "123456";
-    const bankAccountFormatted = "123456 | بنكك";
-
     useEffect(() => {
         let interval = null;
         if (isCounting && timer > 0) {
@@ -81,7 +84,6 @@ function SudanEidApp() {
             setCredits(selectedPackage.count);
             setStep('form');
             confetti();
-            alert(`مبروك يا حبيب! تم تفعيل باقة ${selectedPackage.name} بنجاح.`);
         }
         return () => clearInterval(interval);
     }, [isCounting, timer]);
@@ -106,30 +108,6 @@ function SudanEidApp() {
         setShowCamera(false);
     };
 
-    const handleUpgradeSubmit = () => {
-        if (!formData.receiptImg) { alert("ارفع صورة الإيصال أولاً يا غالي"); return; }
-        
-        // رسالة الواتساب التلقائية
-        const waMsg = encodeURIComponent(`حبابك.. هذا إيصال تحويل باقة ${selectedPackage.name} (${selectedPackage.amount}) لتطبيق عيدية وواجب 🇸🇩`);
-        
-        // فتح الواتساب
-        window.open(`https://api.whatsapp.com/send?phone=${WHATSAPP_NUMBER}&text=${waMsg}`, '_blank');
-        
-        // بدء العداد
-        setStep('waiting');
-        setIsCounting(true);
-    };
-
-    const handleCreate = () => {
-        if (credits > 0) {
-            setCredits(credits - 1);
-            setStep('result');
-            confetti({ colors: ['#D32F2F', '#006400', '#D4AF37'] });
-        } else {
-            setStep('packages');
-        }
-    };
-
     const getSudaneseMsg = () => {
         const list = {
             parent: `يا يمة/يا ابوي ${formData.name}.. العيد مبارك عليك بالبهجة والسرور، ربنا يخليك لينا ذخر وسند. 🌙✨`,
@@ -140,175 +118,179 @@ function SudanEidApp() {
         return list[formData.relation] || list.other;
     };
 
+    // وظيفة التحميل كصورة (Fallback)
+    const handleDownload = () => {
+        html2canvas(cardRef.current, { scale: 3, useCORS: true, backgroundColor: "#ffffff" })
+        .then(canvas => {
+            const link = document.createElement('a');
+            link.download = `معايدة_${formData.name}.png`;
+            link.href = canvas.toDataURL("image/png");
+            link.click();
+        });
+    };
+
+    // وظيفة المشاركة المباشرة بالكرت
+    const handleShare = async () => {
+        const canvas = await html2canvas(cardRef.current, { scale: 2, useCORS: true, backgroundColor: "#ffffff" });
+        const dataUrl = canvas.toDataURL("image/png");
+        const blob = await (await fetch(dataUrl)).blob();
+        const file = new File([blob], `eid_card.png`, { type: "image/png" });
+
+        if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
+            try {
+                await navigator.share({
+                    files: [file],
+                    title: 'عيدية وواجب',
+                    text: getSudaneseMsg(),
+                });
+            } catch (err) {
+                console.error("خطأ في المشاركة:", err);
+                handleDownload();
+            }
+        } else {
+            handleDownload();
+            alert("تم حفظ الكرت في جهازك، يمكنك الآن إرساله يدوياً في واتساب");
+        }
+    };
+
     return (
-        <div className="w-full flex flex-col items-center">
+        <div className="w-full flex flex-col items-center p-4">
             
-            <div className="fixed top-4 left-4 bg-white p-2 px-4 rounded-full shadow-md border border-flag-green z-50">
-                <span className="text-xs font-bold text-flag-green">المتبقي: {credits} رسايل</span>
+            <div className="fixed top-4 left-4 bg-white/90 backdrop-blur p-2 px-4 rounded-full shadow-md border border-flag-green z-50 text-[10px] font-bold text-flag-green">
+                الرصيد: {credits} رسايل
             </div>
 
             {showCamera && (
                 <div className="camera-overlay p-4">
-                    <div className="camera-box mb-8">
-                        <video ref={videoRef} autoPlay playsInline muted className="w-full h-full object-cover"></video>
-                    </div>
+                    <div className="camera-box mb-8"><video ref={videoRef} autoPlay playsInline muted className="w-full h-full object-cover"></video></div>
                     <div className="flex gap-6">
                         <button onClick={()=>setShowCamera(false)} className="bg-white/20 text-white px-8 py-2 rounded-xl">خلف</button>
-                        <button onClick={capture} className="w-20 h-20 bg-white rounded-full border-4 border-flag-green flex items-center justify-center text-4xl shadow-xl">📸</button>
+                        <button onClick={capture} className="w-20 h-20 bg-white rounded-full border-4 border-flag-green text-4xl flex items-center justify-center">📸</button>
                     </div>
                 </div>
             )}
 
             {step === 'splash' && (
                 <div className="glass-panel text-center animate-up">
-                    <div className="w-28 h-28 border-4 border-flag-gold rounded-full mx-auto mb-6 bg-white shadow-lg relative flex items-center justify-center overflow-hidden">
-                        <img src={FIXED_LOGO_URL} className="w-full h-full object-cover rounded-full" onError={(e) => { e.target.src = 'https://img.icons8.com/color/96/sudan.png'; }} />
+                    <div className="w-24 h-24 border-4 border-flag-gold rounded-full mx-auto mb-6 bg-white shadow-lg overflow-hidden flex items-center justify-center">
+                        <img src={FIXED_LOGO_URL} className="w-full h-full object-cover" onError={(e) => { e.target.src = 'https://img.icons8.com/color/96/sudan.png'; }} />
                     </div>
-                    <h1 className="text-3xl font-amiri font-bold text-flag-green mb-2 tracking-tight">عيدية وواجب</h1>
-                    <p className="text-gray-500 mb-8 font-bold text-sm italic font-cairo">حبابك يا غالي.. عيّد بلمسة سودانية</p>
-                    <button onClick={()=>setStep('home')} className="btn-3d btn-3d-green w-full py-4 text-xl font-cairo uppercase">بنعزك ومابنقصر معاك 🚀</button>
-                    <p className="mt-4 text-[10px] text-gray-400 font-bold uppercase font-cairo tracking-widest text-center">تجربة مجانية لأول رسالتين</p>
+                    <h1 className="text-3xl font-amiri font-bold text-flag-green mb-2">عيدية وواجب 🇸🇩</h1>
+                    <button onClick={()=>setStep('home')} className="btn-3d btn-3d-green w-full py-4 text-xl mt-4">ابدأ المعايدة 🚀</button>
                 </div>
             )}
 
             {step === 'home' && (
-                <div className="glass-panel text-center space-y-6 animate-up">
-                    <h2 className="text-xl font-bold text-flag-black mb-4">داير تسوي شنو؟</h2>
-                    <button onClick={()=>{setPath('zakat'); setStep('form');}} className="btn-3d btn-3d-cyan w-full p-6 text-xl flex flex-col items-center justify-center gap-2">
-                        <span className="text-4xl mb-1">🌾</span>
-                        <span>زكاة الفطر</span>
-                    </button>
-                    <button onClick={()=>{setPath('gift'); setStep('form');}} className="btn-3d btn-3d-gold w-full p-6 text-xl flex flex-col items-center justify-center gap-2">
-                        <span className="text-4xl mb-1">🎁</span>
-                        <span>عيدية</span>
-                    </button>
-                    <button onClick={()=>setStep('splash')} className="text-gray-400 text-xs underline mt-2 font-cairo">خلف</button>
+                <div className="glass-panel text-center space-y-4 animate-up">
+                    <h2 className="text-xl font-bold">داير تسوي شنو؟</h2>
+                    <button onClick={()=>setStep('form')} className="btn-3d btn-3d-cyan w-full p-6 text-xl">🌾 زكاة الفطر</button>
+                    <button onClick={()=>setStep('form')} className="btn-3d btn-3d-gold w-full p-6 text-xl">🎁 عيدية العيد</button>
                 </div>
             )}
 
             {step === 'form' && (
                 <div className="glass-panel space-y-4 animate-up">
-                    <h3 className="text-lg font-bold text-flag-red text-center mb-4 italic">بيانات الزول الغالي</h3>
-                    <input type="text" placeholder="اسم المستلم" className="w-full p-4 bg-gray-50 border rounded-xl outline-none focus:border-flag-green font-semibold" onChange={(e)=>setFormData({...formData, name: e.target.value})} />
-                    <select className="w-full p-4 bg-gray-50 border rounded-xl font-bold text-right cursor-pointer" onChange={(e)=>setFormData({...formData, relation: e.target.value})}>
+                    <input type="text" placeholder="اسم المستلم" className="w-full p-4 bg-gray-50 border rounded-xl outline-none" onChange={(e)=>setFormData({...formData, name: e.target.value})} />
+                    <select className="w-full p-4 bg-gray-50 border rounded-xl font-bold" onChange={(e)=>setFormData({...formData, relation: e.target.value})}>
                         <option value="">يقرب لك شنو؟</option>
                         <option value="parent">أب / أم</option>
                         <option value="friend">صديق / فردة</option>
-                        <option value="partner">حبيب / زوج</option>
                         <option value="other">زول غالي</option>
                     </select>
-
                     <div className="grid grid-cols-2 gap-4">
-                        <button onClick={startCamera} className="btn-3d btn-3d-gray flex flex-col items-center justify-center py-4 px-2">
-                            <span className="text-3xl mb-1">📸</span>
-                            <span className="text-[11px] font-bold uppercase">سيلفي العيد</span>
-                        </button>
-                        <label className="btn-3d btn-3d-gray flex flex-col items-center justify-center py-4 px-2 text-center cursor-pointer">
-                            <span className="text-3xl mb-1">📁</span>
-                            <span className="text-[11px] font-bold uppercase font-bold">رفع صورتك</span>
+                        <button onClick={startCamera} className="btn-3d btn-3d-gray py-4 text-xs">📸 سيلفي</button>
+                        <label className="btn-3d btn-3d-gray py-4 text-xs cursor-pointer">📁 رفع صورة
                             <input type="file" className="hidden" accept="image/*" onChange={(e)=>setFormData({...formData, userImg: URL.createObjectURL(e.target.files[0])})} />
                         </label>
                     </div>
-
-                    <div className="p-3 border-2 border-dashed border-gray-200 rounded-xl bg-gray-50 relative h-20 flex items-center justify-center cursor-pointer">
-                        <label className="text-xs font-bold text-gray-400 flex flex-col items-center">
-                            <span>📄</span>
-                            <span>{formData.receiptImg ? "✅ الإيصال مرفق" : "إيصال الواجب (اختياري)"}</span>
-                        </label>
-                        <input type="file" className="absolute inset-0 opacity-0 cursor-pointer" accept="image/*" onChange={(e)=>setFormData({...formData, receiptImg: URL.createObjectURL(e.target.files[0])})} />
-                    </div>
-
-                    <button onClick={handleCreate} className="btn-3d btn-3d-green w-full py-4 text-lg mt-2 shadow-lg font-bold">إنشاء البطاقة ✨</button>
-                    <button onClick={()=>setStep('home')} className="text-gray-400 text-xs underline">خلف</button>
-                </div>
-            )}
-
-            {step === 'packages' && (
-                <div className="glass-panel text-center space-y-6 animate-up">
-                    <h2 className="text-2xl font-amiri font-bold text-flag-red font-bold">الرسايل المجانية خلصت! 😉</h2>
-                    <p className="text-sm text-gray-500 italic font-cairo">"أشحن باقتك عشان تواصل الواجب"</p>
-                    <div className="space-y-4">
-                        <button onClick={()=>{setSelectedPackage({name:'الواجب', amount:'5,000 ج.س', count:10}); setStep('upgrade');}} className="btn-3d btn-3d-cyan w-full p-5 flex justify-between items-center px-8">
-                            <div className="text-right"><p className="text-lg font-bold">باقة الواجب</p><p className="text-[10px]">10 رسايل</p></div>
-                            <p className="font-bold">5,000 ج.س</p>
-                        </button>
-                        <button onClick={()=>{setSelectedPackage({name:'العيلة', amount:'15,000 ج.س', count:50}); setStep('upgrade');}} className="btn-3d btn-3d-gold w-full p-5 flex justify-between items-center px-8">
-                            <div className="text-right"><p className="text-lg font-bold">باقة العيلة</p><p className="text-[10px]">50 رسالة</p></div>
-                            <p className="font-bold">15,000 ج.س</p>
-                        </button>
-                    </div>
-                    <button onClick={()=>setStep('home')} className="text-gray-400 underline text-xs">خلف</button>
-                </div>
-            )}
-
-            {step === 'upgrade' && (
-                <div className="glass-panel text-center space-y-6 animate-up border-t-8 border-flag-red">
-                    <h2 className="text-xl font-bold">تفعيل باقة {selectedPackage.name} 💎</h2>
-                    <div className="bg-yellow-50 p-4 rounded-xl border border-flag-gold">
-                        <p className="text-[10px] text-yellow-700 font-bold mb-1 uppercase tracking-widest text-center">حوّل {selectedPackage.amount} لحساب التطبيق (بنكك)</p>
-                        <p className="text-lg font-mono font-bold text-flag-green tracking-wider text-center">{bankAccountFormatted}</p>
-                    </div>
-                    <label className="w-full flex flex-col items-center justify-center p-4 border-2 border-dashed border-gray-300 rounded-2xl bg-gray-50 cursor-pointer">
-                        <span className="text-3xl mb-1">📤</span>
-                        <span className="text-xs font-bold text-gray-500 uppercase">{formData.receiptImg ? "✅ تم اختيار الإيصال" : "ارفع إيصال الاشتراك"}</span>
+                    <label className="block p-3 border-2 border-dashed border-gray-200 rounded-xl text-center cursor-pointer text-xs font-bold text-gray-400">
+                        {formData.receiptImg ? "✅ الإيصال جاهز" : "📄 إرفاق إيصال (اختياري)"}
                         <input type="file" className="hidden" accept="image/*" onChange={(e)=>setFormData({...formData, receiptImg: URL.createObjectURL(e.target.files[0])})} />
                     </label>
-                    <button onClick={handleUpgradeSubmit} className="btn-3d btn-3d-red w-full py-5 font-bold uppercase text-sm">
-                         مشاركة الإيصال عبر الواتساب وتفعيل الباقة 💬
-                    </button>
-                </div>
-            )}
-
-            {step === 'waiting' && (
-                <div className="glass-panel text-center space-y-8 animate-up">
-                    <div className="timer-circle"><span className="text-flag-green font-bold text-xl">{Math.floor(timer/60)}:{timer%60<10?'0':''}{timer%60}</span></div>
-                    <div>
-                        <h2 className="text-xl font-bold text-flag-black tracking-tight">جاري مراجعة طلبك يا حبيب</h2>
-                        <p className="text-sm text-gray-500 mt-2 px-4 italic">"خليك قريب، بمجرد ما يخلص الوقت حنفعل ليك الباقة تلقائياً"</p>
-                    </div>
-                    <div className="p-4 bg-green-50 border border-green-200 rounded-2xl animate-pulse">
-                        <p className="text-[10px] font-bold text-green-700 uppercase tracking-widest text-center">✅ تم استلام إشعار التحويل</p>
-                    </div>
+                    <button onClick={()=>{ if(credits>0){ setCredits(credits-1); setStep('result'); confetti(); } else setStep('packages'); }} className="btn-3d btn-3d-green w-full py-4 text-lg">إنشاء الكرت ✨</button>
                 </div>
             )}
 
             {step === 'result' && (
-                <div className="max-w-[400px] w-[95%] space-y-6 text-center animate-up">
-                    <div ref={cardRef} className="eid-card-final p-2 shadow-2xl bg-white">
-                        <div className="p-6 border-4 border-double border-flag-gold rounded-[2rem] flex flex-col items-center bg-white relative">
-                            <div className="absolute top-4 right-4 w-12 h-12 flex items-center justify-center overflow-hidden rounded-full border border-flag-gold/30 bg-white">
-                                <img src={FIXED_LOGO_URL} className="w-full h-full object-cover rounded-full opacity-60" onError={(e) => e.target.style.display = 'none'} />
-                            </div>
-                            {formData.userImg && <img src={formData.userImg} className="w-28 h-28 rounded-full border-4 border-flag-red mb-4 object-cover shadow-md" />}
-                            <h4 className="font-amiri font-bold text-flag-red text-3xl mb-2">{formData.name}</h4>
-                            <div className="w-16 h-1 rounded-full bg-flag-green mb-4 mx-auto"></div>
-                            <p className="font-cairo text-flag-black text-md leading-relaxed italic px-2 font-semibold mb-4 text-center">
+                <div className="max-w-[400px] w-full text-center space-y-6 animate-up">
+                    
+                    <div ref={cardRef} className="eid-card-final p-4 shadow-2xl">
+                        <div className="p-6 border-4 border-double border-flag-gold rounded-[2rem] flex flex-col items-center relative bg-white/80">
+                            <img src={FIXED_LOGO_URL} className="absolute top-4 right-4 w-10 h-10 opacity-40" />
+
+                            {formData.userImg && (
+                                <div className="w-32 h-32 rounded-full border-4 border-flag-red overflow-hidden mb-4 shadow-lg">
+                                    <img src={formData.userImg} className="w-full h-full object-cover" />
+                                </div>
+                            )}
+
+                            <h4 className="font-amiri font-bold text-flag-red text-3xl mb-1">{formData.name}</h4>
+                            <div className="w-16 h-1 bg-flag-green mb-4 rounded-full"></div>
+
+                            <p className="font-cairo text-flag-black text-center font-bold italic leading-relaxed px-2 mb-6">
                                 "{getSudaneseMsg()}"
                             </p>
+
                             {formData.receiptImg && (
-                                <div className="w-full p-2 bg-gray-50 border-2 border-dashed border-flag-green rounded-xl">
-                                    <p className="text-[10px] font-bold text-flag-green mb-1 uppercase tracking-tighter">إشعار واصل ✅</p>
+                                <div className="w-full mt-2 p-2 bg-gray-50 border-2 border-dashed border-flag-green rounded-2xl">
+                                    <p className="text-[10px] font-bold text-flag-green mb-1 text-center">✅ تم إرفاق الواجب</p>
                                     <img src={formData.receiptImg} className="w-full h-40 object-contain rounded-lg shadow-inner" />
                                 </div>
                             )}
-                            <div className="mt-6 pt-4 border-t w-full flex justify-between items-center text-[10px] font-bold text-gray-400">
-                                <span>حبيبينا | عيدية وواجب</span>
-                                <span>🇸🇩 عيد 2026</span>
+
+                            <div className="mt-6 flex justify-between w-full text-[9px] font-bold text-gray-400 border-t pt-2 uppercase">
+                                <span>عيدية وواجب 🇸🇩</span>
+                                <span>حبيبنا - 2026</span>
                             </div>
                         </div>
                     </div>
-                    <div className="grid grid-cols-2 gap-4">
-                        <button onClick={()=>{html2canvas(cardRef.current, {scale: 2}).then(c=>{let a=document.createElement('a'); a.download=`عيدية.png`; a.href=c.toDataURL(); a.click();})}} className="btn-3d btn-3d-gray py-4 text-sm font-bold">📥 حفظ الصورة</button>
-                        <a href={`https://wa.me/?text=${encodeURIComponent(getSudaneseMsg())}`} className="btn-3d py-4 text-sm font-bold text-white" style={{background: '#25D366'}}>💬 واتساب</a>
+
+                    <div className="flex flex-col gap-3">
+                        <button 
+                            onClick={handleShare} 
+                            className="btn-3d py-4 text-xl text-white flex items-center justify-center gap-2"
+                            style={{background: 'linear-gradient(180deg, #25D366, #128C7E)', borderBottom: '5px solid #075E54'}}
+                        >
+                            <span>🚀</span>
+                            <span>إرسال الكرت عبر واتساب</span>
+                        </button>
+
+                        <button onClick={handleDownload} className="text-gray-500 text-sm font-bold hover:underline">📥 حفظ في الجهاز فقط</button>
+                        <button onClick={()=>setStep('home')} className="text-flag-red underline text-xs font-bold mt-2">عمل معايدة جديدة</button>
                     </div>
-                    <button onClick={()=>setStep('home')} className="text-gray-400 underline text-xs font-bold uppercase font-bold">سوي واحدة تانية</button>
                 </div>
             )}
 
-            <footer className="mt-12 text-[10px] text-gray-500 font-bold uppercase tracking-widest text-center">
+            {step === 'packages' && (
+                <div className="glass-panel text-center space-y-4 animate-up">
+                    <h2 className="text-xl font-bold text-flag-red">الرسايل خلصت! 😉</h2>
+                    <button onClick={()=>{setSelectedPackage({name:'الواجب', count:10, amount:'5,000'}); setStep('pay');}} className="btn-3d btn-3d-cyan w-full p-4 flex justify-between font-bold"><span>باقة الواجب (10)</span> <span>5,000 ج.س</span></button>
+                    <button onClick={()=>{setSelectedPackage({name:'العيلة', count:50, amount:'15,000'}); setStep('pay');}} className="btn-3d btn-3d-gold w-full p-4 flex justify-between font-bold"><span>باقة العيلة (50)</span> <span>15,000 ج.س</span></button>
+                </div>
+            )}
+
+            {step === 'pay' && (
+                <div className="glass-panel space-y-4 animate-up">
+                    <h2 className="font-bold text-center">تفعيل {selectedPackage.name}</h2>
+                    <p className="text-xs text-center bg-yellow-50 p-2 border border-flag-gold rounded">حوّل لـ: 0433 0306 6053 0001 | بنكك</p>
+                    <label className="btn-3d btn-3d-gray w-full p-4 block text-center cursor-pointer">
+                        📤 ارفع الإيصال
+                        <input type="file" className="hidden" accept="image/*" onChange={(e)=>setFormData({...formData, receiptImg: URL.createObjectURL(e.target.files[0])})} />
+                    </label>
+                    <button onClick={()=>{setStep('waiting'); setIsCounting(true);}} className="btn-3d btn-3d-red w-full py-4 uppercase">تفعيل الباقة الآن 💬</button>
+                </div>
+            )}
+
+            {step === 'waiting' && (
+                <div className="glass-panel text-center space-y-6 animate-up">
+                    <div className="timer-circle"><span className="text-flag-green font-bold">{Math.floor(timer/60)}:{timer%60<10?'0':''}{timer%60}</span></div>
+                    <h2 className="font-bold">جاري المراجعة.. خليك فاتح</h2>
+                </div>
+            )}
+
+            <footer className="mt-8 text-[10px] text-gray-500 font-bold uppercase text-center">
                 بلمسة سودانية مبهجة 🇸🇩 | © 2026 حبيبنا
             </footer>
-
         </div>
     );
 }
