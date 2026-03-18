@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>عيدتك علينا | سيلفي العيد السوداني 🇸🇩</title>
+    <title>هديتي | أرسل فرحتك في لحظة ❤️</title>
 
     <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
@@ -61,7 +61,7 @@
 const { useState, useRef, useEffect } = React;
 
 const FIXED_LOGO_URL = "logo.png"; 
-const ADMIN_WHATSAPP = "966536307077"; // الرقم الجديد للإرسال
+const ADMIN_WHATSAPP = "966536307077"; 
 
 function SudanEidApp() {
     const [step, setStep] = useState('splash');
@@ -140,7 +140,7 @@ function SudanEidApp() {
             try {
                 await navigator.share({
                     files: [file],
-                    title: 'عيدتك علينا',
+                    title: 'هديتي',
                     text: getSudaneseMsg(),
                 });
             } catch (err) {
@@ -153,17 +153,14 @@ function SudanEidApp() {
         }
     };
 
-    // وظيفة تفعيل الباقة الجديدة
     const handleActivatePackage = () => {
         if (!formData.receiptImg) {
             alert("يرجى إرفاق صورة الإيصال أولاً");
             return;
         }
-        // فتح واتساب لإرسال الإيصال يدوياً
         const text = encodeURIComponent(`السلام عليكم، قمت بتحويل مبلغ تفعيل باقة (${selectedPackage.name}). مرفق لكم الإيصال.`);
         window.open(`https://wa.me/${ADMIN_WHATSAPP}?text=${text}`, '_blank');
         
-        // بدء العد التنازلي والانتظار
         setStep('waiting');
         setTimer(300);
         setIsCounting(true);
@@ -189,10 +186,11 @@ function SudanEidApp() {
             {step === 'splash' && (
                 <div className="glass-panel text-center animate-up">
                     <div className="w-24 h-24 border-4 border-flag-gold rounded-full mx-auto mb-6 bg-white shadow-lg overflow-hidden flex items-center justify-center">
-                        <img src={FIXED_LOGO_URL} className="w-full h-full object-cover" onError={(e) => { e.target.src = 'https://img.icons8.com/color/96/sudan.png'; }} />
+                        <img src={FIXED_LOGO_URL} className="w-full h-full object-cover" onError={(e) => { e.target.src = 'https://img.icons8.com/color/96/gift.png'; }} />
                     </div>
-                    <h1 className="text-3xl font-amiri font-bold text-flag-green mb-2">عيدتك علينا 🇸🇩</h1>
-                    <button onClick={()=>setStep('home')} className="btn-3d btn-3d-green w-full py-4 text-xl mt-4">ابدأ المعايدة 🚀</button>
+                    <h1 className="text-4xl font-amiri font-bold text-flag-green mb-1">هديتي</h1>
+                    <p className="text-lg font-cairo text-gray-600 mb-6">أرسل فرحتك في لحظة ❤️</p>
+                    <button onClick={()=>setStep('home')} className="btn-3d btn-3d-green w-full py-4 text-xl mt-4">ابدأ الآن 🚀</button>
                 </div>
             )}
 
@@ -285,8 +283,8 @@ function SudanEidApp() {
                             )}
 
                             <div className="mt-6 flex justify-between w-full text-[9px] font-bold text-gray-500 border-t border-gray-200/50 pt-2 uppercase">
-                                <span>عيدية وواجب 🇸🇩</span>
-                                <span>حبيبنا - 2026</span>
+                                <span>هديتي | عيدية وواجب 🇸🇩</span>
+                                <span>2026</span>
                             </div>
                         </div>
                     </div>
@@ -335,7 +333,7 @@ function SudanEidApp() {
             )}
 
             <footer className="mt-8 text-[10px] text-gray-500 font-bold uppercase text-center">
-                بلمسة سودانية مبهجة 🇸🇩 | © 2026 حبيبنا
+                هديتي | بلمسة سودانية مبهجة 🇸🇩 | © 2026
             </footer>
         </div>
     );
