@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>عيدية وواجب | سيلفي العيد السوداني 🇸🇩</title>
+    <title>عيدتك علينا | سيلفي العيد السوداني 🇸🇩</title>
 
     <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
@@ -65,7 +65,8 @@ const WHATSAPP_NUMBER = "249912108101";
 function SudanEidApp() {
     const [step, setStep] = useState('splash');
     const [credits, setCredits] = useState(2);
-    const [formData, setFormData] = useState({ name: '', relation: '', userImg: null, receiptImg: null });
+    // تم إضافة gender هنا
+    const [formData, setFormData] = useState({ name: '', relation: '', gender: 'male', userImg: null, receiptImg: null });
     const [showCamera, setShowCamera] = useState(false);
     const [selectedPackage, setSelectedPackage] = useState(null);
     const [timer, setTimer] = useState(300);
@@ -109,16 +110,16 @@ function SudanEidApp() {
     };
 
     const getSudaneseMsg = () => {
+        const isMale = formData.gender === 'male';
         const list = {
-            parent: `يا يمة/يا ابوي ${formData.name}.. العيد مبارك عليك بالبهجة والسرور، ربنا يخليك لينا ذخر وسند. 🌙✨`,
-            friend: `يا فردة ${formData.name}.. كل سنة وإنت طيب يا غالي، ودايماً تام ولام.. العيد بيك أحلى والله. 🎉`,
-            partner: `يا عيد دنيتي ${formData.name}.. كل ثانية وإنت طيب وبخير.. السنة الجاية في بيتنا. ❤️`,
-            other: `عيدك مبارك يا حبيب ${formData.name}.. ربنا يتقبل الطاعات ويجعل أيامك كلها سعادة وبشرى.`
+            parent: isMale ? `يا ابوي ${formData.name}.. العيد مبارك عليك بالبهجة والسرور، ربنا يخليك لينا ذخر وسند. 🌙✨` : `يا يمة ${formData.name}.. العيد مبارك عليك بالبهجة والسرور، ربنا يخليك لينا ذخر وسند. 🌙✨`,
+            friend: isMale ? `يا فردة ${formData.name}.. كل سنة وإنت طيب يا غالي، ودايماً تام ولام.. العيد بيك أحلى والله. 🎉` : `يا حبيبة ${formData.name}.. كل سنة وإنتي طيبة يا غالية، ودايماً تامة ولامة.. العيد بيكي أحلى. 🎉`,
+            partner: isMale ? `يا عيد دنيتي ${formData.name}.. كل ثانية وإنت طيب وبخير.. السنة الجاية في بيتنا. ❤️` : `يا عيد دنيتي ${formData.name}.. كل ثانية وإنتي طيبة وبخير.. السنة الجاية في بيتنا. ❤️`,
+            other: isMale ? `عيدك مبارك يا حبيب ${formData.name}.. ربنا يتقبل الطاعات ويجعل أيامك كلها سعادة وبشرى.` : `عيدك مبارك يا غالية ${formData.name}.. ربنا يتقبل الطاعات ويجعل أيامك كلها سعادة وبشرى.`
         };
         return list[formData.relation] || list.other;
     };
 
-    // وظيفة التحميل كصورة (Fallback)
     const handleDownload = () => {
         html2canvas(cardRef.current, { scale: 3, useCORS: true, backgroundColor: "#ffffff" })
         .then(canvas => {
@@ -129,7 +130,6 @@ function SudanEidApp() {
         });
     };
 
-    // وظيفة المشاركة المباشرة بالكرت
     const handleShare = async () => {
         const canvas = await html2canvas(cardRef.current, { scale: 2, useCORS: true, backgroundColor: "#ffffff" });
         const dataUrl = canvas.toDataURL("image/png");
@@ -140,7 +140,7 @@ function SudanEidApp() {
             try {
                 await navigator.share({
                     files: [file],
-                    title: 'عيدية وواجب',
+                    title: 'عيدتك علينا',
                     text: getSudaneseMsg(),
                 });
             } catch (err) {
@@ -175,7 +175,7 @@ function SudanEidApp() {
                     <div className="w-24 h-24 border-4 border-flag-gold rounded-full mx-auto mb-6 bg-white shadow-lg overflow-hidden flex items-center justify-center">
                         <img src={FIXED_LOGO_URL} className="w-full h-full object-cover" onError={(e) => { e.target.src = 'https://img.icons8.com/color/96/sudan.png'; }} />
                     </div>
-                    <h1 className="text-3xl font-amiri font-bold text-flag-green mb-2">عيدية وواجب 🇸🇩</h1>
+                    <h1 className="text-3xl font-amiri font-bold text-flag-green mb-2">عيدتك علينا 🇸🇩</h1>
                     <button onClick={()=>setStep('home')} className="btn-3d btn-3d-green w-full py-4 text-xl mt-4">ابدأ المعايدة 🚀</button>
                 </div>
             )}
@@ -191,6 +191,19 @@ function SudanEidApp() {
             {step === 'form' && (
                 <div className="glass-panel space-y-4 animate-up">
                     <input type="text" placeholder="اسم المستلم" className="w-full p-4 bg-gray-50 border rounded-xl outline-none" onChange={(e)=>setFormData({...formData, name: e.target.value})} />
+                    
+                    {/* اختيار الجنس الجديد */}
+                    <div className="flex gap-2">
+                        <button 
+                            onClick={()=>setFormData({...formData, gender: 'male'})}
+                            className={`flex-1 py-3 rounded-xl border-2 font-bold transition-all ${formData.gender === 'male' ? 'border-flag-green bg-green-50 text-flag-green' : 'border-gray-100 text-gray-400'}`}
+                        >👨 ذكر</button>
+                        <button 
+                            onClick={()=>setFormData({...formData, gender: 'female'})}
+                            className={`flex-1 py-3 rounded-xl border-2 font-bold transition-all ${formData.gender === 'female' ? 'border-flag-red bg-red-50 text-flag-red' : 'border-gray-100 text-gray-400'}`}
+                        >👩 أنثى</button>
+                    </div>
+
                     <select className="w-full p-4 bg-gray-50 border rounded-xl font-bold" onChange={(e)=>setFormData({...formData, relation: e.target.value})}>
                         <option value="">يقرب لك شنو؟</option>
                         <option value="parent">أب / أم</option>
