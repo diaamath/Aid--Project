@@ -45,7 +45,8 @@
             border-radius: 2.5rem; 
             overflow: hidden; 
             position: relative;
-            background-image: url('https://www.transparenttextures.com/patterns/paper-fibers.png');
+            background-size: cover;
+            background-position: center;
         }
         .timer-circle { width: 100px; height: 100px; border: 6px solid #f3f3f3; border-top: 6px solid #006400; border-radius: 50%; animation: spin 2s linear infinite; display: flex; align-items: center; justify-content: center; margin: 0 auto; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
@@ -60,13 +61,12 @@
 const { useState, useRef, useEffect } = React;
 
 const FIXED_LOGO_URL = "logo.png"; 
-const WHATSAPP_NUMBER = "249912108101"; 
+const ADMIN_WHATSAPP = "966536307077"; // الرقم الجديد للإرسال
 
 function SudanEidApp() {
     const [step, setStep] = useState('splash');
     const [credits, setCredits] = useState(2);
-    // تم إضافة gender هنا
-    const [formData, setFormData] = useState({ name: '', relation: '', gender: 'male', userImg: null, receiptImg: null });
+    const [formData, setFormData] = useState({ name: '', relation: '', gender: 'male', userImg: null, receiverImg: null, bgImg: null, receiptImg: null });
     const [showCamera, setShowCamera] = useState(false);
     const [selectedPackage, setSelectedPackage] = useState(null);
     const [timer, setTimer] = useState(300);
@@ -114,7 +114,7 @@ function SudanEidApp() {
         const list = {
             parent: isMale ? `يا ابوي ${formData.name}.. العيد مبارك عليك بالبهجة والسرور، ربنا يخليك لينا ذخر وسند. 🌙✨` : `يا يمة ${formData.name}.. العيد مبارك عليك بالبهجة والسرور، ربنا يخليك لينا ذخر وسند. 🌙✨`,
             friend: isMale ? `يا فردة ${formData.name}.. كل سنة وإنت طيب يا غالي، ودايماً تام ولام.. العيد بيك أحلى والله. 🎉` : `يا حبيبة ${formData.name}.. كل سنة وإنتي طيبة يا غالية، ودايماً تامة ولامة.. العيد بيكي أحلى. 🎉`,
-            partner: isMale ? `يا عيد دنيتي ${formData.name}.. كل ثانية وإنت طيب وبخير.. السنة الجاية في بيتنا. ❤️` : `يا عيد دنيتي ${formData.name}.. كل ثانية وإنتي طيبة وبخير.. السنة الجاية في بيتنا. ❤️`,
+            partner: isMale ? `زوجي وحبيبي ${formData.name}.. كل عيد وإنت معي، ربنا يديمك لي نعمة. ❤️` : `زوجتي وحبيبتي ${formData.name}.. كل سنة وإنتي عيدي وأجمل أقداري. ❤️`,
             other: isMale ? `عيدك مبارك يا حبيب ${formData.name}.. ربنا يتقبل الطاعات ويجعل أيامك كلها سعادة وبشرى.` : `عيدك مبارك يا غالية ${formData.name}.. ربنا يتقبل الطاعات ويجعل أيامك كلها سعادة وبشرى.`
         };
         return list[formData.relation] || list.other;
@@ -151,6 +151,22 @@ function SudanEidApp() {
             handleDownload();
             alert("تم حفظ الكرت في جهازك، يمكنك الآن إرساله يدوياً في واتساب");
         }
+    };
+
+    // وظيفة تفعيل الباقة الجديدة
+    const handleActivatePackage = () => {
+        if (!formData.receiptImg) {
+            alert("يرجى إرفاق صورة الإيصال أولاً");
+            return;
+        }
+        // فتح واتساب لإرسال الإيصال يدوياً
+        const text = encodeURIComponent(`السلام عليكم، قمت بتحويل مبلغ تفعيل باقة (${selectedPackage.name}). مرفق لكم الإيصال.`);
+        window.open(`https://wa.me/${ADMIN_WHATSAPP}?text=${text}`, '_blank');
+        
+        // بدء العد التنازلي والانتظار
+        setStep('waiting');
+        setTimer(300);
+        setIsCounting(true);
     };
 
     return (
@@ -190,9 +206,8 @@ function SudanEidApp() {
 
             {step === 'form' && (
                 <div className="glass-panel space-y-4 animate-up">
-                    <input type="text" placeholder="اسم المستلم" className="w-full p-4 bg-gray-50 border rounded-xl outline-none" onChange={(e)=>setFormData({...formData, name: e.target.value})} />
+                    <input type="text" placeholder="اسم المستلم" className="w-full p-4 bg-gray-50 border rounded-xl outline-none focus:border-flag-green" onChange={(e)=>setFormData({...formData, name: e.target.value})} />
                     
-                    {/* اختيار الجنس الجديد */}
                     <div className="flex gap-2">
                         <button 
                             onClick={()=>setFormData({...formData, gender: 'male'})}
@@ -208,50 +223,68 @@ function SudanEidApp() {
                         <option value="">يقرب لك شنو؟</option>
                         <option value="parent">أب / أم</option>
                         <option value="friend">صديق / فردة</option>
+                        <option value="partner">زوج / زوجة 💍</option>
                         <option value="other">زول غالي</option>
                     </select>
+
                     <div className="grid grid-cols-2 gap-4">
                         <button onClick={startCamera} className="btn-3d btn-3d-gray py-4 text-xs">📸 سيلفي</button>
-                        <label className="btn-3d btn-3d-gray py-4 text-xs cursor-pointer">📁 رفع صورة
-                            <input type="file" className="hidden" accept="image/*" onChange={(e)=>setFormData({...formData, userImg: URL.createObjectURL(e.target.files[0])})} />
+                        <label className="btn-3d btn-3d-gray py-4 text-xs cursor-pointer">📁 صورة الشخص
+                            <input type="file" className="hidden" accept="image/*" onChange={(e)=>setFormData({...formData, receiverImg: URL.createObjectURL(e.target.files[0])})} />
                         </label>
                     </div>
-                    <label className="block p-3 border-2 border-dashed border-gray-200 rounded-xl text-center cursor-pointer text-xs font-bold text-gray-400">
+
+                    <label className={`btn-3d w-full py-4 text-sm block cursor-pointer border-2 border-dashed transition-all ${formData.bgImg ? 'bg-green-50 border-flag-green text-flag-green' : 'btn-3d-gold'}`}>
+                        {formData.bgImg ? "✅ تم تغيير الخلفية" : "🖼️ رفع خلفية مخصصة للكرت"}
+                        <input type="file" className="hidden" accept="image/*" onChange={(e)=>setFormData({...formData, bgImg: URL.createObjectURL(e.target.files[0])})} />
+                    </label>
+
+                    <label className="block p-3 border-2 border-dashed border-gray-200 rounded-xl text-center cursor-pointer text-[10px] font-bold text-gray-400">
                         {formData.receiptImg ? "✅ الإيصال جاهز" : "📄 إرفاق إيصال (اختياري)"}
                         <input type="file" className="hidden" accept="image/*" onChange={(e)=>setFormData({...formData, receiptImg: URL.createObjectURL(e.target.files[0])})} />
                     </label>
+
                     <button onClick={()=>{ if(credits>0){ setCredits(credits-1); setStep('result'); confetti(); } else setStep('packages'); }} className="btn-3d btn-3d-green w-full py-4 text-lg">إنشاء الكرت ✨</button>
                 </div>
             )}
 
             {step === 'result' && (
                 <div className="max-w-[400px] w-full text-center space-y-6 animate-up">
-                    
-                    <div ref={cardRef} className="eid-card-final p-4 shadow-2xl">
-                        <div className="p-6 border-4 border-double border-flag-gold rounded-[2rem] flex flex-col items-center relative bg-white/80">
+                    <div ref={cardRef} className="eid-card-final p-4 shadow-2xl" style={{
+                        backgroundImage: formData.bgImg ? `url(${formData.bgImg})` : "url('https://www.transparenttextures.com/patterns/paper-fibers.png')",
+                        backgroundColor: '#fff'
+                    }}>
+                        <div className={`p-6 border-4 border-double border-flag-gold rounded-[2rem] flex flex-col items-center relative ${formData.bgImg ? 'bg-white/60 backdrop-blur-[2px]' : 'bg-white/80'}`}>
                             <img src={FIXED_LOGO_URL} className="absolute top-4 right-4 w-10 h-10 opacity-40" />
 
-                            {formData.userImg && (
-                                <div className="w-32 h-32 rounded-full border-4 border-flag-red overflow-hidden mb-4 shadow-lg">
-                                    <img src={formData.userImg} className="w-full h-full object-cover" />
-                                </div>
-                            )}
+                            <div className="flex items-center justify-center -space-x-8 mb-4">
+                                {formData.userImg && (
+                                    <div className="w-24 h-24 rounded-full border-4 border-flag-red overflow-hidden shadow-lg bg-white z-20">
+                                        <img src={formData.userImg} className="w-full h-full object-cover" />
+                                    </div>
+                                )}
+                                {formData.receiverImg && (
+                                    <div className="w-24 h-24 rounded-full border-4 border-flag-green overflow-hidden shadow-lg bg-white z-10 translate-y-4">
+                                        <img src={formData.receiverImg} className="w-full h-full object-cover" />
+                                    </div>
+                                )}
+                            </div>
 
-                            <h4 className="font-amiri font-bold text-flag-red text-3xl mb-1">{formData.name}</h4>
+                            <h4 className="font-amiri font-bold text-flag-red text-3xl mb-1 drop-shadow-sm">{formData.name}</h4>
                             <div className="w-16 h-1 bg-flag-green mb-4 rounded-full"></div>
 
-                            <p className="font-cairo text-flag-black text-center font-bold italic leading-relaxed px-2 mb-6">
+                            <p className="font-cairo text-flag-black text-center font-bold italic leading-relaxed px-2 mb-6 drop-shadow-sm">
                                 "{getSudaneseMsg()}"
                             </p>
 
                             {formData.receiptImg && (
-                                <div className="w-full mt-2 p-2 bg-gray-50 border-2 border-dashed border-flag-green rounded-2xl">
+                                <div className="w-full mt-2 p-2 bg-white/90 border-2 border-dashed border-flag-green rounded-2xl">
                                     <p className="text-[10px] font-bold text-flag-green mb-1 text-center">✅ تم إرفاق الواجب</p>
                                     <img src={formData.receiptImg} className="w-full h-40 object-contain rounded-lg shadow-inner" />
                                 </div>
                             )}
 
-                            <div className="mt-6 flex justify-between w-full text-[9px] font-bold text-gray-400 border-t pt-2 uppercase">
+                            <div className="mt-6 flex justify-between w-full text-[9px] font-bold text-gray-500 border-t border-gray-200/50 pt-2 uppercase">
                                 <span>عيدية وواجب 🇸🇩</span>
                                 <span>حبيبنا - 2026</span>
                             </div>
@@ -267,9 +300,8 @@ function SudanEidApp() {
                             <span>🚀</span>
                             <span>إرسال الكرت عبر واتساب</span>
                         </button>
-
                         <button onClick={handleDownload} className="text-gray-500 text-sm font-bold hover:underline">📥 حفظ في الجهاز فقط</button>
-                        <button onClick={()=>setStep('home')} className="text-flag-red underline text-xs font-bold mt-2">عمل معايدة جديدة</button>
+                        <button onClick={()=>setStep('form')} className="text-flag-red underline text-xs font-bold mt-2">تعديل أو كرت جديد</button>
                     </div>
                 </div>
             )}
@@ -285,19 +317,20 @@ function SudanEidApp() {
             {step === 'pay' && (
                 <div className="glass-panel space-y-4 animate-up">
                     <h2 className="font-bold text-center">تفعيل {selectedPackage.name}</h2>
-                    <p className="text-xs text-center bg-yellow-50 p-2 border border-flag-gold rounded">حوّل لـ: 0433 0306 6053 0001 | بنكك</p>
+                    <p className="text-[10px] text-center bg-yellow-50 p-2 border border-flag-gold rounded">حوّل لـ: 0433 0306 6053 0001 | بنكك</p>
                     <label className="btn-3d btn-3d-gray w-full p-4 block text-center cursor-pointer">
-                        📤 ارفع الإيصال
+                        {formData.receiptImg ? "✅ تم رفع الإيصال" : "📤 ارفع الإيصال"}
                         <input type="file" className="hidden" accept="image/*" onChange={(e)=>setFormData({...formData, receiptImg: URL.createObjectURL(e.target.files[0])})} />
                     </label>
-                    <button onClick={()=>{setStep('waiting'); setIsCounting(true);}} className="btn-3d btn-3d-red w-full py-4 uppercase">تفعيل الباقة الآن 💬</button>
+                    <button onClick={handleActivatePackage} className="btn-3d btn-3d-red w-full py-4 uppercase">إرسال الإيصال وتفعيل الباقة 💬</button>
                 </div>
             )}
 
             {step === 'waiting' && (
                 <div className="glass-panel text-center space-y-6 animate-up">
                     <div className="timer-circle"><span className="text-flag-green font-bold">{Math.floor(timer/60)}:{timer%60<10?'0':''}{timer%60}</span></div>
-                    <h2 className="font-bold">جاري المراجعة.. خليك فاتح</h2>
+                    <h2 className="font-bold">جاري مراجعة إيصالك..</h2>
+                    <p className="text-xs text-gray-500">خليك فاتح الصفحة، سيتم إضافة الرصيد تلقائياً بعد انتهاء الوقت</p>
                 </div>
             )}
 
