@@ -61,7 +61,7 @@
 const { useState, useRef, useEffect } = React;
 
 const FIXED_LOGO_URL = "logo.png"; 
-const ADMIN_WHATSAPP = "966536307077"; 
+const ADMIN_WHATSAPP = "249999978684"; 
 
 function SudanEidApp() {
     const [step, setStep] = useState('splash');
@@ -315,7 +315,7 @@ function SudanEidApp() {
             {step === 'pay' && (
                 <div className="glass-panel space-y-4 animate-up">
                     <h2 className="font-bold text-center">تفعيل {selectedPackage.name}</h2>
-                    <p className="text-[10px] text-center bg-yellow-50 p-2 border border-flag-gold rounded">حوّل لـ: 0433 0306 6053 0001 | بنكك</p>
+                    <p className="text-[10px] text-center bg-yellow-50 p-2 border border-flag-gold rounded">حوّل لـ: 3183716 | بنكك</p>
                     <label className="btn-3d btn-3d-gray w-full p-4 block text-center cursor-pointer">
                         {formData.receiptImg ? "✅ تم رفع الإيصال" : "📤 ارفع الإيصال"}
                         <input type="file" className="hidden" accept="image/*" onChange={(e)=>setFormData({...formData, receiptImg: URL.createObjectURL(e.target.files[0])})} />
