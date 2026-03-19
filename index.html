@@ -38,16 +38,7 @@
         .btn-3d-gray { background: #f3f4f6; color: #4b5563; border-bottom: 5px solid #d1d5db; }
         .camera-overlay { position: fixed; inset: 0; background: #000; z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; }
         .camera-box { width: 85%; max-width: 350px; aspect-ratio: 1/1; overflow: hidden; border-radius: 2rem; border: 6px solid #00BCD4; transform: scaleX(-1); }
-        
-        .eid-card-final { 
-            background: #fff; 
-            border: 12px double #D4AF37; 
-            border-radius: 2.5rem; 
-            overflow: hidden; 
-            position: relative;
-            background-size: cover;
-            background-position: center;
-        }
+        .eid-card-final { background: #fff; border: 12px double #D4AF37; border-radius: 2.5rem; overflow: hidden; position: relative; background-size: cover; background-position: center; }
         .timer-circle { width: 100px; height: 100px; border: 6px solid #f3f3f3; border-top: 6px solid #006400; border-radius: 50%; animation: spin 2s linear infinite; display: flex; align-items: center; justify-content: center; margin: 0 auto; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         .animate-up { animation: fadeIn 0.5s ease-out forwards; }
@@ -144,7 +135,6 @@ function SudanEidApp() {
                     text: getSudaneseMsg(),
                 });
             } catch (err) {
-                console.error("خطأ في المشاركة:", err);
                 handleDownload();
             }
         } else {
@@ -153,15 +143,9 @@ function SudanEidApp() {
         }
     };
 
-    const handleActivatePackage = () => {
-        if (!formData.receiptImg) {
-            alert("يرجى إرفاق صورة الإيصال أولاً ليتمكن الأدمن من تفعيل حسابك");
-            return;
-        }
-        // نص تنبيهي واضح للأدمن وللمستخدم
-        const text = encodeURIComponent(`طلب تفعيل باقة: ${selectedPackage.name}\n\nلقد قمت برفع الإيصال في التطبيق، سأقوم الآن بإرسال صورة الإيصال لك هنا للتأكيد.`);
+    const handleOpenWhatsApp = () => {
+        const text = encodeURIComponent(`السلام عليكم خدمة عملاء "هديتي".. أريد تفعيل باقة (${selectedPackage.name}) بمبلغ (${selectedPackage.amount} ج.س).\nسأقوم بإرسال صورة تحويل "بنكك" الآن.`);
         window.open(`https://wa.me/${ADMIN_WHATSAPP}?text=${text}`, '_blank');
-        
         setStep('waiting');
         setTimer(300);
         setIsCounting(true);
@@ -208,14 +192,8 @@ function SudanEidApp() {
                     <input type="text" placeholder="اسم المستلم" className="w-full p-4 bg-gray-50 border rounded-xl outline-none focus:border-flag-green" onChange={(e)=>setFormData({...formData, name: e.target.value})} />
                     
                     <div className="flex gap-2">
-                        <button 
-                            onClick={()=>setFormData({...formData, gender: 'male'})}
-                            className={`flex-1 py-3 rounded-xl border-2 font-bold transition-all ${formData.gender === 'male' ? 'border-flag-green bg-green-50 text-flag-green' : 'border-gray-100 text-gray-400'}`}
-                        >👨 ذكر</button>
-                        <button 
-                            onClick={()=>setFormData({...formData, gender: 'female'})}
-                            className={`flex-1 py-3 rounded-xl border-2 font-bold transition-all ${formData.gender === 'female' ? 'border-flag-red bg-red-50 text-flag-red' : 'border-gray-100 text-gray-400'}`}
-                        >👩 أنثى</button>
+                        <button onClick={()=>setFormData({...formData, gender: 'male'})} className={`flex-1 py-3 rounded-xl border-2 font-bold ${formData.gender === 'male' ? 'border-flag-green bg-green-50 text-flag-green' : 'border-gray-100 text-gray-400'}`}>👨 ذكر</button>
+                        <button onClick={()=>setFormData({...formData, gender: 'female'})} className={`flex-1 py-3 rounded-xl border-2 font-bold ${formData.gender === 'female' ? 'border-flag-red bg-red-50 text-flag-red' : 'border-gray-100 text-gray-400'}`}>👩 أنثى</button>
                     </div>
 
                     <select className="w-full p-4 bg-gray-50 border rounded-xl font-bold" onChange={(e)=>setFormData({...formData, relation: e.target.value})}>
@@ -233,13 +211,13 @@ function SudanEidApp() {
                         </label>
                     </div>
 
-                    <label className={`btn-3d w-full py-4 text-sm block cursor-pointer border-2 border-dashed transition-all ${formData.bgImg ? 'bg-green-50 border-flag-green text-flag-green' : 'btn-3d-gold'}`}>
+                    <label className={`btn-3d w-full py-4 text-sm block cursor-pointer border-2 border-dashed ${formData.bgImg ? 'bg-green-50 border-flag-green text-flag-green' : 'btn-3d-gold'}`}>
                         {formData.bgImg ? "✅ تم تغيير الخلفية" : "🖼️ رفع خلفية مخصصة للكرت"}
                         <input type="file" className="hidden" accept="image/*" onChange={(e)=>setFormData({...formData, bgImg: URL.createObjectURL(e.target.files[0])})} />
                     </label>
 
                     <label className="block p-3 border-2 border-dashed border-gray-200 rounded-xl text-center cursor-pointer text-[10px] font-bold text-gray-400">
-                        {formData.receiptImg ? "✅ الإيصال جاهز" : "📄 إرفاق إيصال (اختياري)"}
+                        {formData.receiptImg ? "✅ إيصال الواجب جاهز" : "📄 إرفاق إيصال واجب (اختياري)"}
                         <input type="file" className="hidden" accept="image/*" onChange={(e)=>setFormData({...formData, receiptImg: URL.createObjectURL(e.target.files[0])})} />
                     </label>
 
@@ -249,59 +227,18 @@ function SudanEidApp() {
 
             {step === 'result' && (
                 <div className="max-w-[400px] w-full text-center space-y-6 animate-up">
-                    <div ref={cardRef} className="eid-card-final p-4 shadow-2xl" style={{
-                        backgroundImage: formData.bgImg ? `url(${formData.bgImg})` : "url('https://www.transparenttextures.com/patterns/paper-fibers.png')",
-                        backgroundColor: '#fff'
-                    }}>
-                        <div className={`p-6 border-4 border-double border-flag-gold rounded-[2rem] flex flex-col items-center relative ${formData.bgImg ? 'bg-white/60 backdrop-blur-[2px]' : 'bg-white/80'}`}>
-                            <img src={FIXED_LOGO_URL} className="absolute top-4 right-4 w-10 h-10 opacity-40" />
-
-                            <div className="flex items-center justify-center -space-x-8 mb-4">
-                                {formData.userImg && (
-                                    <div className="w-24 h-24 rounded-full border-4 border-flag-red overflow-hidden shadow-lg bg-white z-20">
-                                        <img src={formData.userImg} className="w-full h-full object-cover" />
-                                    </div>
-                                )}
-                                {formData.receiverImg && (
-                                    <div className="w-24 h-24 rounded-full border-4 border-flag-green overflow-hidden shadow-lg bg-white z-10 translate-y-4">
-                                        <img src={formData.receiverImg} className="w-full h-full object-cover" />
-                                    </div>
-                                )}
+                    <div ref={cardRef} className="eid-card-final p-4 shadow-2xl">
+                        <div className="p-6 border-4 border-double border-flag-gold rounded-[2rem] flex flex-col items-center bg-white/80">
+                            <div className="flex -space-x-8 mb-4">
+                                {formData.userImg && <img src={formData.userImg} className="w-24 h-24 rounded-full border-4 border-flag-red object-cover z-20 shadow-lg"/>}
+                                {formData.receiverImg && <img src={formData.receiverImg} className="w-24 h-24 rounded-full border-4 border-flag-green object-cover z-10 translate-y-4 shadow-lg"/>}
                             </div>
-
-                            <h4 className="font-amiri font-bold text-flag-red text-3xl mb-1 drop-shadow-sm">{formData.name}</h4>
-                            <div className="w-16 h-1 bg-flag-green mb-4 rounded-full"></div>
-
-                            <p className="font-cairo text-flag-black text-center font-bold italic leading-relaxed px-2 mb-6 drop-shadow-sm">
-                                "{getSudaneseMsg()}"
-                            </p>
-
-                            {formData.receiptImg && (
-                                <div className="w-full mt-2 p-2 bg-white/90 border-2 border-dashed border-flag-green rounded-2xl">
-                                    <p className="text-[10px] font-bold text-flag-green mb-1 text-center">✅ تم إرفاق الواجب</p>
-                                    <img src={formData.receiptImg} className="w-full h-40 object-contain rounded-lg shadow-inner" />
-                                </div>
-                            )}
-
-                            <div className="mt-6 flex justify-between w-full text-[9px] font-bold text-gray-500 border-t border-gray-200/50 pt-2 uppercase">
-                                <span>هديتي | عيدية وواجب 🇸🇩</span>
-                                <span>2026</span>
-                            </div>
+                            <h4 className="font-amiri font-bold text-flag-red text-3xl mb-1">{formData.name}</h4>
+                            <p className="font-cairo text-flag-black font-bold italic leading-relaxed px-2 mb-6 text-sm">"{getSudaneseMsg()}"</p>
+                            {formData.receiptImg && <img src={formData.receiptImg} className="w-full h-40 object-contain rounded-lg border-2 border-dashed border-flag-green p-1 bg-white" />}
                         </div>
                     </div>
-
-                    <div className="flex flex-col gap-3">
-                        <button 
-                            onClick={handleShare} 
-                            className="btn-3d py-4 text-xl text-white flex items-center justify-center gap-2"
-                            style={{background: 'linear-gradient(180deg, #25D366, #128C7E)', borderBottom: '5px solid #075E54'}}
-                        >
-                            <span>🚀</span>
-                            <span>إرسال الكرت عبر واتساب</span>
-                        </button>
-                        <button onClick={handleDownload} className="text-gray-500 text-sm font-bold hover:underline">📥 حفظ في الجهاز فقط</button>
-                        <button onClick={()=>setStep('form')} className="text-flag-red underline text-xs font-bold mt-2">تعديل أو كرت جديد</button>
-                    </div>
+                    <button onClick={handleShare} className="btn-3d btn-3d-green w-full py-4 text-xl">🚀 مشاركة عبر واتساب</button>
                 </div>
             )}
 
@@ -314,36 +251,36 @@ function SudanEidApp() {
             )}
 
             {step === 'pay' && (
-                <div className="glass-panel space-y-4 animate-up">
-                    <h2 className="font-bold text-center">تفعيل {selectedPackage.name}</h2>
-                    <p className="text-[10px] text-center bg-yellow-50 p-2 border border-flag-gold rounded font-bold">حوّل لـ: 3183716 | بنكك</p>
-                    
-                    <div className="bg-red-50 p-3 rounded-lg border border-red-100 mb-2">
-                        <p className="text-[11px] text-red-600 font-bold leading-tight">
-                            ⚠️ تنبيه: بعد الضغط على الزر، سيفتح واتساب. يرجى إرفاق صورة الإيصال يدوياً في المحادثة لتفعيل باقتك.
+                <div className="glass-panel text-center space-y-6 animate-up">
+                    <div>
+                        <h2 className="font-bold text-xl mb-2 text-flag-black">تفعيل {selectedPackage.name}</h2>
+                        <div className="bg-white border-2 border-flag-green p-4 rounded-2xl shadow-inner">
+                            <p className="text-gray-500 text-sm mb-1">حول مبلغ <b>{selectedPackage.amount} ج.س</b> لـ:</p>
+                            <p className="text-2xl font-bold text-flag-green tracking-widest">3183716</p>
+                            <p className="text-[10px] font-bold text-gray-400 mt-1 uppercase">بنك الخرطوم | بنكك</p>
+                        </div>
+                    </div>
+
+                    <div className="bg-yellow-50 p-4 rounded-xl border border-yellow-100">
+                        <p className="text-sm text-yellow-700 font-bold leading-relaxed">
+                            💡 بعد التحويل، اضغط الزر أدناه لإرسال صورة الإشعار للأدمن في واتساب لتفعيل حسابك فوراً.
                         </p>
                     </div>
 
-                    <label className="btn-3d btn-3d-gray w-full p-4 block text-center cursor-pointer">
-                        {formData.receiptImg ? "✅ الإيصال جاهز في التطبيق" : "📤 ارفع الإيصال هنا أولاً"}
-                        <input type="file" className="hidden" accept="image/*" onChange={(e)=>setFormData({...formData, receiptImg: URL.createObjectURL(e.target.files[0])})} />
-                    </label>
-                    
-                    <button onClick={handleActivatePackage} className="btn-3d btn-3d-red w-full py-4 uppercase">فتح واتساب لتأكيد الدفع 💬</button>
+                    <button onClick={handleOpenWhatsApp} className="btn-3d btn-3d-red w-full py-5 text-lg">إرسال التحويل لواتساب 💬</button>
+                    <button onClick={()=>setStep('packages')} className="text-gray-400 text-sm font-bold">رجوع للباقات</button>
                 </div>
             )}
 
             {step === 'waiting' && (
                 <div className="glass-panel text-center space-y-6 animate-up">
                     <div className="timer-circle"><span className="text-flag-green font-bold">{Math.floor(timer/60)}:{timer%60<10?'0':''}{timer%60}</span></div>
-                    <h2 className="font-bold">انتظار التفعيل..</h2>
-                    <p className="text-xs text-gray-500">إذا أرسلت الإيصال في واتساب، سيقوم الأدمن بتفعيل حسابك قريباً جداً.</p>
+                    <h2 className="font-bold">انتظار التأكيد..</h2>
+                    <p className="text-xs text-gray-500">يرجى إرسال صورة إشعار "بنكك" في محادثة الواتساب المفتوحة الآن. سيقوم الأدمن بإضافة الرصيد لك فور استلام الصورة.</p>
                 </div>
             )}
 
-            <footer className="mt-8 text-[10px] text-gray-500 font-bold uppercase text-center">
-                هديتي | بلمسة سودانية مبهجة 🇸🇩 | © 2026
-            </footer>
+            <footer className="mt-8 text-[10px] text-gray-500 font-bold uppercase text-center">هديتي | 2026</footer>
         </div>
     );
 }
