@@ -155,10 +155,11 @@ function SudanEidApp() {
 
     const handleActivatePackage = () => {
         if (!formData.receiptImg) {
-            alert("يرجى إرفاق صورة الإيصال أولاً");
+            alert("يرجى إرفاق صورة الإيصال أولاً ليتمكن الأدمن من تفعيل حسابك");
             return;
         }
-        const text = encodeURIComponent(`السلام عليكم، قمت بتحويل مبلغ تفعيل باقة (${selectedPackage.name}). مرفق لكم الإيصال.`);
+        // نص تنبيهي واضح للأدمن وللمستخدم
+        const text = encodeURIComponent(`طلب تفعيل باقة: ${selectedPackage.name}\n\nلقد قمت برفع الإيصال في التطبيق، سأقوم الآن بإرسال صورة الإيصال لك هنا للتأكيد.`);
         window.open(`https://wa.me/${ADMIN_WHATSAPP}?text=${text}`, '_blank');
         
         setStep('waiting');
@@ -315,20 +316,28 @@ function SudanEidApp() {
             {step === 'pay' && (
                 <div className="glass-panel space-y-4 animate-up">
                     <h2 className="font-bold text-center">تفعيل {selectedPackage.name}</h2>
-                    <p className="text-[10px] text-center bg-yellow-50 p-2 border border-flag-gold rounded">حوّل لـ: 3183716 | بنكك</p>
+                    <p className="text-[10px] text-center bg-yellow-50 p-2 border border-flag-gold rounded font-bold">حوّل لـ: 3183716 | بنكك</p>
+                    
+                    <div className="bg-red-50 p-3 rounded-lg border border-red-100 mb-2">
+                        <p className="text-[11px] text-red-600 font-bold leading-tight">
+                            ⚠️ تنبيه: بعد الضغط على الزر، سيفتح واتساب. يرجى إرفاق صورة الإيصال يدوياً في المحادثة لتفعيل باقتك.
+                        </p>
+                    </div>
+
                     <label className="btn-3d btn-3d-gray w-full p-4 block text-center cursor-pointer">
-                        {formData.receiptImg ? "✅ تم رفع الإيصال" : "📤 ارفع الإيصال"}
+                        {formData.receiptImg ? "✅ الإيصال جاهز في التطبيق" : "📤 ارفع الإيصال هنا أولاً"}
                         <input type="file" className="hidden" accept="image/*" onChange={(e)=>setFormData({...formData, receiptImg: URL.createObjectURL(e.target.files[0])})} />
                     </label>
-                    <button onClick={handleActivatePackage} className="btn-3d btn-3d-red w-full py-4 uppercase">إرسال الإيصال وتفعيل الباقة 💬</button>
+                    
+                    <button onClick={handleActivatePackage} className="btn-3d btn-3d-red w-full py-4 uppercase">فتح واتساب لتأكيد الدفع 💬</button>
                 </div>
             )}
 
             {step === 'waiting' && (
                 <div className="glass-panel text-center space-y-6 animate-up">
                     <div className="timer-circle"><span className="text-flag-green font-bold">{Math.floor(timer/60)}:{timer%60<10?'0':''}{timer%60}</span></div>
-                    <h2 className="font-bold">جاري مراجعة إيصالك..</h2>
-                    <p className="text-xs text-gray-500">خليك فاتح الصفحة، سيتم إضافة الرصيد تلقائياً بعد انتهاء الوقت</p>
+                    <h2 className="font-bold">انتظار التفعيل..</h2>
+                    <p className="text-xs text-gray-500">إذا أرسلت الإيصال في واتساب، سيقوم الأدمن بتفعيل حسابك قريباً جداً.</p>
                 </div>
             )}
 
