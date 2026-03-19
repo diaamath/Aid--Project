@@ -78,7 +78,7 @@ function SudanEidApp() {
             confetti();
         }
         return () => clearInterval(interval);
-    }, [isCounting, timer]);
+    }, [isCounting, timer, selectedPackage]);
 
     const startCamera = async () => {
         try {
@@ -149,6 +149,14 @@ function SudanEidApp() {
         setStep('waiting');
         setTimer(300);
         setIsCounting(true);
+    };
+
+    const handleNewCard = () => {
+        if (credits > 0) {
+            setStep('form');
+        } else {
+            setStep('packages');
+        }
     };
 
     return (
@@ -239,6 +247,7 @@ function SudanEidApp() {
                         </div>
                     </div>
                     <button onClick={handleShare} className="btn-3d btn-3d-green w-full py-4 text-xl">🚀 مشاركة عبر واتساب</button>
+                    <button onClick={handleNewCard} className="text-flag-red underline text-sm font-bold mt-2">عمل كرت مرة أخرى</button>
                 </div>
             )}
 
