@@ -151,10 +151,14 @@ function SudanEidApp() {
         setIsCounting(true);
     };
 
-    const handleNewCard = () => {
+    // هذا التابع هو المسؤول عن فحص الرصيد عند طلب كرت جديد
+    const handleTryAgain = () => {
         if (credits > 0) {
+            // تصفير البيانات للبدء من جديد مع الحفاظ على الرصيد
+            setFormData({ name: '', relation: '', gender: 'male', userImg: null, receiverImg: null, bgImg: null, receiptImg: null });
             setStep('form');
         } else {
+            // إذا خلص الرصيد (بعد الكرت الثاني) يروح للباقات
             setStep('packages');
         }
     };
@@ -197,14 +201,14 @@ function SudanEidApp() {
 
             {step === 'form' && (
                 <div className="glass-panel space-y-4 animate-up">
-                    <input type="text" placeholder="اسم المستلم" className="w-full p-4 bg-gray-50 border rounded-xl outline-none focus:border-flag-green" onChange={(e)=>setFormData({...formData, name: e.target.value})} />
+                    <input type="text" value={formData.name} placeholder="اسم المستلم" className="w-full p-4 bg-gray-50 border rounded-xl outline-none focus:border-flag-green" onChange={(e)=>setFormData({...formData, name: e.target.value})} />
                     
                     <div className="flex gap-2">
                         <button onClick={()=>setFormData({...formData, gender: 'male'})} className={`flex-1 py-3 rounded-xl border-2 font-bold ${formData.gender === 'male' ? 'border-flag-green bg-green-50 text-flag-green' : 'border-gray-100 text-gray-400'}`}>👨 ذكر</button>
                         <button onClick={()=>setFormData({...formData, gender: 'female'})} className={`flex-1 py-3 rounded-xl border-2 font-bold ${formData.gender === 'female' ? 'border-flag-red bg-red-50 text-flag-red' : 'border-gray-100 text-gray-400'}`}>👩 أنثى</button>
                     </div>
 
-                    <select className="w-full p-4 bg-gray-50 border rounded-xl font-bold" onChange={(e)=>setFormData({...formData, relation: e.target.value})}>
+                    <select value={formData.relation} className="w-full p-4 bg-gray-50 border rounded-xl font-bold" onChange={(e)=>setFormData({...formData, relation: e.target.value})}>
                         <option value="">يقرب لك شنو؟</option>
                         <option value="parent">أب / أم</option>
                         <option value="friend">صديق / فردة</option>
@@ -247,15 +251,18 @@ function SudanEidApp() {
                         </div>
                     </div>
                     <button onClick={handleShare} className="btn-3d btn-3d-green w-full py-4 text-xl">🚀 مشاركة عبر واتساب</button>
-                    <button onClick={handleNewCard} className="text-flag-red underline text-sm font-bold mt-2">عمل كرت مرة أخرى</button>
+                    
+                    {/* زر عمل كرت آخر مع المنطق المطلوب */}
+                    <button onClick={handleTryAgain} className="btn-3d btn-3d-gold w-full py-4 text-lg mt-2">✨ عمل كرت مرة أخرى</button>
                 </div>
             )}
 
             {step === 'packages' && (
                 <div className="glass-panel text-center space-y-4 animate-up">
-                    <h2 className="text-xl font-bold text-flag-red">الرسايل خلصت! 😉</h2>
-                    <button onClick={()=>{setSelectedPackage({name:'الواجب', count:10, amount:'5,000'}); setStep('pay');}} className="btn-3d btn-3d-cyan w-full p-4 flex justify-between font-bold"><span>باقة الواجب (10)</span> <span>5,000 ج.س</span></button>
-                    <button onClick={()=>{setSelectedPackage({name:'العيلة', count:50, amount:'15,000'}); setStep('pay');}} className="btn-3d btn-3d-gold w-full p-4 flex justify-between font-bold"><span>باقة العيلة (50)</span> <span>15,000 ج.س</span></button>
+                    <h2 className="text-xl font-bold text-flag-red">الرسايل المجانية خلصت! 😉</h2>
+                    <p className="text-sm text-gray-600 mb-4">اشحن باقتك وواصل في توزيع الفرحة</p>
+                    <button onClick={()=>{setSelectedPackage({name:'الواجب', count:10, amount:'5,000'}); setStep('pay');}} className="btn-3d btn-3d-cyan w-full p-4 flex justify-between font-bold"><span>باقة الواجب (10 كروت)</span> <span>5,000 ج.س</span></button>
+                    <button onClick={()=>{setSelectedPackage({name:'العيلة', count:50, amount:'15,000'}); setStep('pay');}} className="btn-3d btn-3d-gold w-full p-4 flex justify-between font-bold"><span>باقة العيلة (50 كرت)</span> <span>15,000 ج.س</span></button>
                 </div>
             )}
 
